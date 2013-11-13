@@ -118,58 +118,71 @@ angular.module('At', ['ngCaret'])
         var subtext, caretOffset;
         var flag = attrs.flag || '@';
         var lineHeight = scope.lineHeight || 16;
+        var updateInterval = attrs.updateinterval || 5; //ms
         scope.isAtListHidden = true;
+        
+        scope.watchDelayIdle = updateInterval; //ms
+        scope.watchDelayActive = 5; //ms
+        scope.watchDelay = scope.watchDelayIdle;
+        scope.watchTimer = false;
 
         scope.$watch(function () {
           return scope.caretPos;
         }, function (nowCaretPos) {
+          if(scope.watchTimer){
+            $timeout.cancel(scope.watchTimer)
+          }  
+          scope.watchTimer = $timeout(function(){
+            if (angular.isDefined(nowCaretPos)) {
+              scope.content = AtUtils.getContent(element);
+              subtext = scope.content.slice(0, nowCaretPos);
+              scope.query = AtUtils.query(subtext, flag);
+              caretOffset = Caret.getOffset(element);
 
-          if (angular.isDefined(nowCaretPos)) {
-            scope.content = AtUtils.getContent(element);
-            subtext = scope.content.slice(0, nowCaretPos);
-            scope.query = AtUtils.query(subtext, flag);
-            caretOffset = Caret.getOffset(element);
-
-            if (scope.query === null) {
-              scope.isAtListHidden = true;
-            }
-
-            if (angular.isString(scope.query) && scope.query.length <= 10) {
-              if (scope.query === '' && element.next().attr('auto-follow') === 'true') {
-                element.next().find('ul').css({
-                  left: caretOffset.left,
-                  top: caretOffset.top + lineHeight
-                });
+              if (scope.query === null) {
+                scope.isAtListHidden = true;
+                scope.watchDelay = scope.watchDelayIdle;
               }
-              scope.query = {
-                'text': scope.query,
-                'headPos': nowCaretPos - scope.query.length,
-                'endPos': nowCaretPos
-              };
+
+              if (angular.isString(scope.query) && scope.query.length <= 10) {
+                if (scope.query === '' && element.next().attr('auto-follow') === 'true') {
+                  element.next().find('ul').css({
+                    left: caretOffset.left,
+                    top: caretOffset.top + lineHeight
+                  });
+                }
+                scope.query = {
+                  'text': scope.query,
+                  'headPos': nowCaretPos - scope.query.length,
+                  'endPos': nowCaretPos
+                };
+              }
+
+              if (angular.isObject(scope.query)) {
+                scope.users = scope.response;
+                scope.isAtListHidden = false;
+                scope.watchDelay = scope.watchDelayActive;
+
+                // $http.get('data/user.json').success(function (response) {
+                //   scope.users = response.users;
+
+                //   if (scope.users.length === 0) {
+                //     scope.isAtListHidden = true;
+                //   } else {
+                //     scope.isAtListHidden = false;
+                //     $timeout(function () {
+                //       element.next().find('li').first().addClass('list-cur');
+                //     });
+                //   }
+                // });
+              }
             }
-
-            if (angular.isObject(scope.query)) {
-              scope.users = scope.response;
-              scope.isAtListHidden = false;
-
-              // $http.get('data/user.json').success(function (response) {
-              //   scope.users = response.users;
-
-              //   if (scope.users.length === 0) {
-              //     scope.isAtListHidden = true;
-              //   } else {
-              //     scope.isAtListHidden = false;
-              //     $timeout(function () {
-              //       element.next().find('li').first().addClass('list-cur');
-              //     });
-              //   }
-              // });
-            }
-          }
+          },scope.watchDelay);
         });
 
         element.bind('blur', function () {
           scope.isAtListHidden = true;
+          scope.watchDelay = scope.watchDelayIdle;
         });
 
         element.bind('click touch keyup', function () {
