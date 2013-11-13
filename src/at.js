@@ -210,7 +210,8 @@ angular.module('At', ['ngCaret'])
         var keyCode = {
           up: 38,
           down: 40,
-          enter: 13
+          enter: 13,
+          tab: 9
         };
 
         scope.autoComplete = function (object) {
@@ -244,7 +245,12 @@ angular.module('At', ['ngCaret'])
               break;
               
             case keyCode.enter:
+            case keyCode.tab:
               e.originalEvent.preventDefault();
+              if(cur.length == 0) {
+                AtUtils.select.next(cur,lists);
+                cur = ul.children('.list-cur');
+              }
               var insertContent = AtUtils.select.choose(cur);
 
               scope.$apply(function () {
