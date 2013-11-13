@@ -104,7 +104,7 @@ angular.module('At', ['ngCaret'])
     };
   })
 
-  .directive('atUser', function (
+  .directive('atUser', ['$http', '$timeout', 'Caret', 'AtUtils', function (
     $http,
     $timeout,
     Caret,
@@ -179,9 +179,9 @@ angular.module('At', ['ngCaret'])
         });
       }
     };
-  })
+  }])
 
-  .directive('autoComplete', function (
+  .directive('autoComplete', ['Caret', 'AtUtils', function (
     Caret,
     AtUtils
   ) {
@@ -245,5 +245,5 @@ angular.module('At', ['ngCaret'])
         });
       }
     };
-  });
+  }]);
 

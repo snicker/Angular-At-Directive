@@ -1,5 +1,5 @@
 angular.module('ngCaret', [])
-  .factory('EditableCaret', function (
+  .factory('EditableCaret', ['CaretUtils', function (
     CaretUtils
   ) {
     'use strict';
@@ -83,9 +83,9 @@ angular.module('ngCaret', [])
         };
       }
     };
-  })
+  }])
 
-  .factory('InputCaret', function (
+  .factory('InputCaret', ['Mirror', 'CaretUtils', function (
     Mirror,
     CaretUtils
   ) {
@@ -198,7 +198,7 @@ angular.module('ngCaret', [])
         };
       }
     };
-  })
+  }])
 
   .factory('Mirror', function () {
     'use strict';
@@ -282,7 +282,7 @@ angular.module('ngCaret', [])
     };
   })
 
-  .factory('Caret', function (
+  .factory('Caret', ['InputCaret', 'EditableCaret', function (
     InputCaret,
     EditableCaret
     ) {
@@ -312,4 +312,4 @@ angular.module('ngCaret', [])
         }
       }
     };
-  });
+  }]);
