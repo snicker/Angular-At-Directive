@@ -39,7 +39,7 @@ angular.module('At', ['ngCaret'])
         }
       },
 
-      insert: function (element, content, data, query, range) {
+      insert: function (element, content, data, query, range, ngModel) {
         var insertNode, pos, sel, source, startStr, text;
         if (element.attr('contenteditable') === 'true') {
           insertNode = angular.element('<span contenteditable="false">@' + data + '&nbsp;</span>');
@@ -65,6 +65,7 @@ angular.module('At', ['ngCaret'])
           startStr = source.slice(0, Math.max(query.headPos - 1, 0));
           text = startStr + '@' + data + ' ' + (source.slice(query.endPos || 0));
           element.val(text);
+          ngModel.$setViewValue(text);
         }
       },
 
@@ -202,7 +203,8 @@ angular.module('At', ['ngCaret'])
 
     return {
       restrict: 'EA',
-      link: function (scope, element) {
+      require: 'ngModel',
+      link: function (scope, element, attrs, ngModel) {
         var range;
         var span = element.next();
         var keyCode = {
@@ -213,7 +215,7 @@ angular.module('At', ['ngCaret'])
 
         scope.autoComplete = function (object) {
           element[0].focus();
-          AtUtils.insert(element, scope.content, object.username, scope.query, range);
+          AtUtils.insert(element, scope.content, object.username, scope.query, range, ngModel);
           Caret.setPos(element, scope.query.headPos + object.username.length + 1);
         };
 
@@ -247,7 +249,7 @@ angular.module('At', ['ngCaret'])
 
               scope.$apply(function () {
                 range = AtUtils.markRange();
-                AtUtils.insert(element, scope.content, insertContent, scope.query, range);
+                AtUtils.insert(element, scope.content, insertContent, scope.query, range, ngModel);
                 scope.isAtListHidden = true;
               });
               Caret.setPos(element, scope.query.headPos + insertContent.length + 1);
